@@ -10,11 +10,13 @@ import {
   Modal,
   Pressable,
 } from 'react-native';
+import RNPickerSelect from 'react-native-picker-select';
 import { FontAwesome } from '@expo/vector-icons';
 
 export default function HomeScreen() {
   const [instances, setInstances] = useState<{ key: string; timestamp: Date }[]>([]);
   const [helpVisible, setHelpVisible] = useState(false); // State for help modal visibility
+  const [grouping, setGrouping] = useState('day'); // Default grouping: Day
 
   // Function to add a new instance with a unique key
   const addInstance = () => {
@@ -43,22 +45,46 @@ export default function HomeScreen() {
     );
   };
 
-  // Function to group instances by date
-  const groupByDate = () => {
+  // Grouping logic based on selected period
+  const groupInstances = () => {
     const grouped: { [key: string]: typeof instances } = {};
+
     instances.forEach((instance) => {
-      const dateKey = instance.timestamp.toDateString();
-      if (!grouped[dateKey]) {
-        grouped[dateKey] = [];
+      let key: string;
+
+      // Determine grouping key based on selected grouping period
+      switch (grouping) {
+        case 'hour':
+          key = instance.timestamp.toLocaleString(undefined, {
+            hour: '2-digit',
+            hour12: true,
+          });
+          break;
+        case 'half-day':
+          const hours = instance.timestamp.getHours();
+          key = hours < 12 ? 'AM' : 'PM';
+          key = `${instance.timestamp.toDateString()} (${key})`;
+          break;
+        case 'month':
+          key = instance.timestamp.toLocaleString(undefined, { month: 'long', year: 'numeric' });
+          break;
+        case 'day':
+        default:
+          key = instance.timestamp.toDateString();
       }
-      grouped[dateKey].push(instance);
+
+      if (!grouped[key]) {
+        grouped[key] = [];
+      }
+      grouped[key].push(instance);
     });
+
     return Object.entries(grouped);
   };
 
   return (
     <View style={styles.container}>
-      {/* Title Row with Help Icon */}
+      {/* Title Row */}
       <View style={styles.titleRow}>
         <Text style={styles.title}>TallyWise</Text>
         <TouchableOpacity onPress={() => setHelpVisible(true)} style={styles.helpButton}>
@@ -66,43 +92,44 @@ export default function HomeScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Help Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={helpVisible}
-        onRequestClose={() => setHelpVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>How to Use TallyWise</Text>
-            <Text style={styles.modalText}>
-              - Tap the "Add Instance" button to log an occurrence of something you are tracking.
-            </Text>
-            <Text style={styles.modalText}>
-              - Each entry is timestamped to track when it occurred.
-            </Text>
-            <Text style={styles.modalText}>
-              - Records are grouped by day, showing how many times something happened each day.
-            </Text>
-            <Text style={styles.modalText}>
-              - Long-press the trash icon to delete a record.
-            </Text>
-            <Pressable style={styles.closeButton} onPress={() => setHelpVisible(false)}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
+      {/* Dropdown for Grouping Selection */}
+      <RNPickerSelect
+        onValueChange={(value) => {
+          console.log('Picker Value Changed:', value); // Log the selected value
+          setGrouping(value);
+        }}
+        items={[
+          { label: 'Day', value: 'day' },
+          { label: 'Half Day (AM/PM)', value: 'half-day' },
+          { label: 'Hour', value: 'hour' },
+          { label: 'Month', value: 'month' },
+        ]}
+        value={grouping}
+        placeholder={{ label: 'Select Time Period...', value: null }}
+        onOpen={() => console.log('Picker Opened')} // Log when picker opens
+        onClose={() => console.log('Picker Closed')} // Log when picker closes
+        style={{
+          ...pickerStyles,
+          placeholder: {
+            color: '#999',
+          },
+        }}
+        useNativeAndroidPickerStyle={false}
+      />
+
+
 
       {/* Grouped List of Instances */}
       <FlatList
-        data={groupByDate()}
-        keyExtractor={([date]) => date}
-        renderItem={({ item: [date, instances] }) => (
+        data={groupInstances()}
+        keyExtractor={([key]) => key}
+        renderItem={({ item: [key, instances] }) => (
           <View>
-            <Text style={styles.dateHeader}>{date}</Text>
+            {/* Group Header */}
+            <Text style={styles.dateHeader}>{key}</Text>
+            {/* Tally for the Group */}
             <Text style={styles.dailyTally}>Total records: {instances.length}</Text>
+            {/* Instances for the Group */}
             {instances.map((instance) => (
               <View key={instance.key} style={styles.row}>
                 <Text style={styles.timestamp}>{instance.timestamp.toLocaleTimeString()}</Text>
@@ -124,6 +151,32 @@ export default function HomeScreen() {
       <TouchableOpacity style={styles.button} onPress={addInstance}>
         <Text style={styles.buttonText}>Add Instance</Text>
       </TouchableOpacity>
+
+      {/* Help Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={helpVisible}
+        onRequestClose={() => setHelpVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>How to Use TallyWise</Text>
+            <Text style={styles.modalText}>
+              - Tap the "Add Instance" button to log an occurrence of something you are tracking.
+            </Text>
+            <Text style={styles.modalText}>
+              - Use the dropdown menu to group instances by day, half-day, hour, or month.
+            </Text>
+            <Text style={styles.modalText}>
+              - Long-press the trash icon to delete a record.
+            </Text>
+            <Pressable style={styles.closeButton} onPress={() => setHelpVisible(false)}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -154,7 +207,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginTop: 20,
-    marginBottom: 5,
     color: '#0077cc',
   },
   dailyTally: {
@@ -202,7 +254,6 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
@@ -234,3 +285,33 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+const pickerStyles = {
+  inputIOS: {
+    fontSize: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderRadius: 4,
+    color: '#333',
+    borderColor: '#0077cc',
+    backgroundColor: '#f5f5f5',
+    marginBottom: 20,
+  },
+  inputAndroid: {
+    fontSize: 16,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderWidth: 1,
+    borderRadius: 4,
+    color: '#333',
+    borderColor: '#0077cc',
+    backgroundColor: '#f5f5f5',
+    marginBottom: 20,
+  },
+  placeholder: {
+    color: '#999', // Placeholder color for better visibility
+  },
+};
+
+
