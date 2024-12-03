@@ -44,8 +44,8 @@ const DeleteButton = ({
             onLongPress={handleLongPress}
             style={styles.deleteButton}
         >
-            <View>
-                <FontAwesome name="trash" size={24} color="#ff0000" style={styles.icon} />
+            <View style={styles.container}>
+                {/* Progress Bar above the icon */}
                 <Animated.View
                     style={[
                         styles.progressBar,
@@ -57,28 +57,32 @@ const DeleteButton = ({
                         },
                     ]}
                 />
+                {/* Trash Icon */}
+                <FontAwesome name="trash" size={24} color="#ff0000" style={styles.icon} />
             </View>
         </TouchableHighlight>
     );
 };
 
 const styles = StyleSheet.create({
-    deleteButton: {
-        padding: 10,
-        borderRadius: 5,
+    container: {
         alignItems: 'center',
         justifyContent: 'center',
         position: 'relative',
     },
+    deleteButton: {
+        padding: 10,
+        borderRadius: 5,
+    },
     progressBar: {
-        height: 5,
+        height: 5, // Adjust as needed
         backgroundColor: '#ff0000',
         position: 'absolute',
-        bottom: 0,
+        top: -10, // Position the progress bar above the icon
         left: 0,
     },
     icon: {
-        marginLeft: 15,
+        marginTop: 10, // Add spacing between the icon and the progress bar
     },
 });
 
