@@ -1,5 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
+import {
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    FlatList,
+} from 'react-native';
+import { FontAwesome } from '@expo/vector-icons'; // Import FontAwesome for the icon
 
 type DropdownOption = {
     label: string;
@@ -12,7 +19,11 @@ type CustomDropdownProps = {
     onValueChange: (value: string) => void;
 };
 
-const CustomDropdown: React.FC<CustomDropdownProps> = ({ options, selectedValue, onValueChange }) => {
+const CustomDropdown: React.FC<CustomDropdownProps> = ({
+    options,
+    selectedValue,
+    onValueChange,
+}) => {
     const [isOpen, setIsOpen] = useState(false);
 
     const handleOptionSelect = (value: string) => {
@@ -28,8 +39,16 @@ const CustomDropdown: React.FC<CustomDropdownProps> = ({ options, selectedValue,
                 onPress={() => setIsOpen(!isOpen)}
             >
                 <Text style={styles.dropdownHeaderText}>
-                    {options.find((option) => option.value === selectedValue)?.label || 'Select an Option'}
+                    {options.find((option) => option.value === selectedValue)?.label ||
+                        'Select an Option'}
                 </Text>
+                {/* Add the dropdown icon */}
+                <FontAwesome
+                    name={isOpen ? 'chevron-up' : 'chevron-down'} // Change icon based on dropdown state
+                    size={16}
+                    color="#333"
+                    style={styles.icon}
+                />
             </TouchableOpacity>
 
             {/* Dropdown Options */}
@@ -60,25 +79,32 @@ const styles = StyleSheet.create({
     },
     dropdownHeader: {
         backgroundColor: '#fff',
-        padding: 10,
-        borderRadius: 5,
+        padding: 15,
+        borderRadius: 8,
         borderColor: '#ccc',
         borderWidth: 1,
+        flexDirection: 'row', // Align text and icon in a row
+        justifyContent: 'space-between', // Space between text and icon
+        alignItems: 'center', // Center vertically
     },
     dropdownHeaderText: {
         fontSize: 16,
         color: '#333',
     },
+    icon: {
+        marginLeft: 10, // Space between text and icon
+    },
     dropdownOptions: {
         backgroundColor: '#fff',
         marginTop: 5,
-        borderRadius: 5,
+        borderRadius: 8,
         borderColor: '#ccc',
         borderWidth: 1,
         maxHeight: 150, // Limit height to show a few options
+        overflow: 'hidden',
     },
     option: {
-        padding: 10,
+        padding: 15,
         borderBottomColor: '#ddd',
         borderBottomWidth: 1,
     },

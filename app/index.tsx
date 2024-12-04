@@ -13,7 +13,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import CustomDropdown from '../src/components/CustomDropdown';
 import DeleteButton from '../src/components/DeleteButton';
 import dropdownOptions from '../src/constants/dropdownOptions';
-
+import * as Haptics from 'expo-haptics';
 
 export default function HomeScreen() {
   const [instances, setInstances] = useState<{ key: string; timestamp: Date }[]>([]);
@@ -21,6 +21,10 @@ export default function HomeScreen() {
   const [grouping, setGrouping] = useState('');
 
   const addInstance = () => {
+    // Trigger haptic feedback
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    // Add a new instance
     const newInstance = {
       key: Date.now().toString(),
       timestamp: new Date(),

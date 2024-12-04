@@ -6,7 +6,7 @@ type DropdownOption = {
   
   const dropdownOptions: DropdownOption[] = [
     {
-      label: 'Choose a grouping',
+      label: 'View your tallies by...',
       value: '',
       disabled: true, // Prevent selection of this default option
     },
