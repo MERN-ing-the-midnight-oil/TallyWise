@@ -29,11 +29,12 @@ const NoteButton: React.FC<NoteButtonProps> = ({ note, onSave }) => {
             {/* Note Icon */}
             <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.noteButton}>
                 <FontAwesome
-                    name="sticky-note"
+                    name="pencil" // Use 'pencil' icon
                     size={24}
                     color={note ? '#00cc00' : '#cccccc'} // Green if note exists, gray otherwise
                 />
             </TouchableOpacity>
+
 
             {/* Modal for Editing Note */}
             <Modal

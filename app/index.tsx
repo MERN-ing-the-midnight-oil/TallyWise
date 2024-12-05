@@ -187,10 +187,13 @@ export default function HomeScreen() {
           <View style={modalStyles.modalContent}>
             <Text style={modalStyles.title}>About TallyWise</Text>
             <Text style={modalStyles.text}>
-              TallyWise is a simple app for tracking occurrences.
+              TallyWise is a simple app for tracking instances of when something happens.
             </Text>
             <Text style={modalStyles.text}>
-              Use the dropdown to group instances by day, hour, etc.
+              Use the dropdown to separate your recorded instances by day, hour, etc.
+            </Text>
+            <Text style={modalStyles.text}>
+              Tap the pencil icon to add a text note to an instance.
             </Text>
             <Text style={modalStyles.text}>
               Long-press the trash icon to delete an instance.
