@@ -2,35 +2,70 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   TouchableOpacity,
   Modal,
   Pressable,
 } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import { Audio } from 'expo-av';
+import * as Haptics from 'expo-haptics';
 
 import CustomDropdown from '../src/components/CustomDropdown';
 import DeleteButton from '../src/components/DeleteButton';
 import dropdownOptions from '../src/constants/dropdownOptions';
-import * as Haptics from 'expo-haptics';
+import NoteButton from '../src/components/NoteButton';
+import styles from '../src/styles/HomeScreenStyles'; // Main styles
+import modalStyles from '../src/styles/ModalStyles'; // Modal styles
 
 export default function HomeScreen() {
   const [instances, setInstances] = useState<{ key: string; timestamp: Date }[]>([]);
-  const [helpVisible, setHelpVisible] = useState(false);
+  const [helpVisible, setHelpVisible] = useState(false); // State for showing the modal
   const [grouping, setGrouping] = useState('');
 
-  const addInstance = () => {
-    // Trigger haptic feedback
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-
-    // Add a new instance
-    const newInstance = {
-      key: Date.now().toString(),
-      timestamp: new Date(),
-    };
-    setInstances((prevInstances) => [...prevInstances, newInstance]);
+  // Function to play the click sound
+  const playClickSound = async () => {
+    try {
+      console.log('Attempting to load sound...');
+      const { sound } = await Audio.Sound.createAsync(
+        require('../assets/sounds/click.mp3'),
+        { shouldPlay: true } // Ensure sound starts immediately
+      );
+      console.log('Sound loaded:', sound);
+      const status = await sound.getStatusAsync();
+      console.log('Sound status before play:', status);
+      await sound.playAsync();
+      console.log('Sound played.');
+      sound.unloadAsync(); // Cleanup
+    } catch (error) {
+      console.error('Error loading or playing sound:', error);
+    }
   };
+
+
+
+
+
+
+
+
+
+  const addInstance = async () => {
+    try {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+      console.log('Resolved path:', require('../assets/sounds/click.mp3')); // Log the resolved path
+      await playClickSound();
+
+      const newInstance = {
+        key: Date.now().toString(),
+        timestamp: new Date(),
+      };
+      setInstances((prevInstances) => [...prevInstances, newInstance]);
+    } catch (error) {
+      console.error('Error in addInstance:', error);
+    }
+  };
+
 
   const deleteInstance = (key: string) => {
     setInstances((prevInstances) => prevInstances.filter((instance) => instance.key !== key));
@@ -49,7 +84,6 @@ export default function HomeScreen() {
         case 'hour':
           dateKey = `${timestamp.toDateString()}, ${timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} Hour`;
           break;
-
         case 'half-day':
           const ampm = timestamp.getHours() < 12 ? 'AM' : 'PM';
           dateKey = `${timestamp.toDateString()}, ${ampm} Half-Day`;
@@ -87,10 +121,7 @@ export default function HomeScreen() {
       <CustomDropdown
         options={dropdownOptions}
         selectedValue={grouping}
-        onValueChange={(value) => {
-          console.log('Selected Value:', value);
-          setGrouping(value);
-        }}
+        onValueChange={(value) => setGrouping(value)}
       />
 
       <FlatList
@@ -98,15 +129,41 @@ export default function HomeScreen() {
         keyExtractor={([date]) => date}
         renderItem={({ item: [date, instances] }) => (
           <View>
+            {/* Group Header */}
             <Text style={styles.dateHeader}>{date}</Text>
             <Text style={styles.dailyTally}>Total records: {instances.length}</Text>
+
+            {/* List of Instances */}
             {instances.map((instance) => (
               <View key={instance.key} style={styles.row}>
-                <Text style={styles.timestamp}>{instance.timestamp.toLocaleTimeString()}</Text>
-                <DeleteButton
-                  instanceKey={instance.key}
-                  onDelete={deleteInstance}
+                {/* Note Button */}
+                <NoteButton
+                  note={instance.note}
+                  onSave={(note) => {
+                    // Update the instance with the new note
+                    setInstances((prevInstances) =>
+                      prevInstances.map((i) =>
+                        i.key === instance.key ? { ...i, note } : i
+                      )
+                    );
+                  }}
                 />
+
+                {/* Timestamp */}
+                <Text style={styles.timestamp}>
+                  {instance.timestamp.toLocaleString('en-US', {
+                    weekday: 'long', // Saturday
+                    month: 'short',  // Dec
+                    day: '2-digit',  // 12
+                    hour: '2-digit', // 9
+                    minute: '2-digit', // 16
+                    second: '2-digit', // 55
+                    hour12: true, // PM
+                  })}
+                </Text>
+
+                {/* Delete Button */}
+                <DeleteButton instanceKey={instance.key} onDelete={deleteInstance} />
               </View>
             ))}
           </View>
@@ -114,80 +171,36 @@ export default function HomeScreen() {
         ListEmptyComponent={<Text style={styles.emptyText}>No instances yet! Add one below.</Text>}
         contentContainerStyle={{ paddingBottom: 100 }}
       />
+
       <TouchableOpacity style={styles.button} onPress={addInstance}>
         <Text style={styles.buttonText}>Add Instance</Text>
       </TouchableOpacity>
+
+      {/* Help Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={helpVisible}
+        onRequestClose={() => setHelpVisible(false)}
+      >
+        <View style={modalStyles.modalContainer}>
+          <View style={modalStyles.modalContent}>
+            <Text style={modalStyles.title}>About TallyWise</Text>
+            <Text style={modalStyles.text}>
+              TallyWise is a simple app for tracking occurrences.
+            </Text>
+            <Text style={modalStyles.text}>
+              Use the dropdown to group instances by day, hour, etc.
+            </Text>
+            <Text style={modalStyles.text}>
+              Long-press the trash icon to delete an instance.
+            </Text>
+            <Pressable style={modalStyles.closeButton} onPress={() => setHelpVisible(false)}>
+              <Text style={modalStyles.closeButtonText}>Close</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    padding: 20,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 10,
-  },
-  title: {
-    fontSize: 30,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  helpButton: {
-    marginLeft: 10,
-  },
-  dateHeader: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 20,
-    marginBottom: 5,
-    color: '#0077cc',
-  },
-  dailyTally: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#444',
-    marginBottom: 10,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#e0e0e0',
-    padding: 10,
-    borderRadius: 5,
-    marginBottom: 10,
-    width: '100%',
-  },
-  timestamp: {
-    fontSize: 16,
-    color: '#333',
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#666',
-    marginVertical: 10,
-  },
-  button: {
-    position: 'absolute',
-    bottom: '15%',
-    width: '80%',
-    backgroundColor: '#6200ee',
-    paddingVertical: 30,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-});
-
