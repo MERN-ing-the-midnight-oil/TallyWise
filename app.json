@@ -5,28 +5,32 @@
         "projectId": "1592e49d-f17a-4f31-b57e-5651ec4418c6"
       }
     },
-
     "icon": "./assets/images/icon.png",
     "name": "Tally Wizard",
     "slug": "tallywise",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "orientation": "portrait",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.rhyssmoker.tallywise"
+      "bundleIdentifier": "com.rhyssmoker.tallywise",
+      "buildNmber": "2"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.rhyssmoker.tallywise"
     }
   }
 }
