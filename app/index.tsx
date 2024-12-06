@@ -70,7 +70,6 @@ export default function HomeScreen() {
   const deleteInstance = (key: string) => {
     setInstances((prevInstances) => prevInstances.filter((instance) => instance.key !== key));
   };
-
   const groupByDate = () => {
     const grouped: { [key: string]: typeof instances } = {};
     instances.forEach((instance) => {
@@ -82,7 +81,8 @@ export default function HomeScreen() {
           dateKey = `${timestamp.toDateString()}, ${timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} Minute`;
           break;
         case 'hour':
-          dateKey = `${timestamp.toDateString()}, ${timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} Hour`;
+          // Modified to group by hour only
+          dateKey = `${timestamp.toDateString()}, ${timestamp.toLocaleTimeString([], { hour: '2-digit' })} Hour`;
           break;
         case 'half-day':
           const ampm = timestamp.getHours() < 12 ? 'AM' : 'PM';
@@ -109,6 +109,7 @@ export default function HomeScreen() {
 
     return Object.entries(grouped);
   };
+
 
   return (
     <View style={styles.container}>
