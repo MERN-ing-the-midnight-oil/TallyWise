@@ -8,7 +8,7 @@
 
     "icon": "./assets/images/icon.png",
     "name": "Tally Wizard",
-    "slug": "tally-wizard",
+    "slug": "tallywise",
     "version": "1.0.0",
     "orientation": "portrait",
     "platforms": ["ios", "android"],
