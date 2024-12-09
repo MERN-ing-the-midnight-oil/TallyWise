@@ -109,7 +109,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.titleRow}>
-        <Text style={styles.title}>TallyWise</Text>
+        <Text style={styles.title}>Tally Wizard</Text>
       </View>
       <CustomDropdown
         options={dropdownOptions}
