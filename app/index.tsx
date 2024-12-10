@@ -78,7 +78,7 @@ export default function HomeScreen() {
           dateKey = `${timestamp.toDateString()}, ${timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} Minute`;
           break;
         case 'hour':
-          dateKey = `${timestamp.toDateString()}, ${timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '00' })} Hour`;
+          dateKey = `${timestamp.toDateString()}, ${timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} Hour`;
           break;
         case 'half-day':
           const ampm = timestamp.getHours() < 12 ? 'AM' : 'PM';
